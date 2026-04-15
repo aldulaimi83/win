@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Powerball Analysis Bot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container-main {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .brand {
+            color: #ff6b35;
+            font-weight: bold;
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            background: white;
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 20px;
+            font-weight: 600;
+        }
+
+        .btn-run {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-run:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(255,107,53,0.4);
+        }
+
+        .btn-run:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            max-width: 200px;
+        }
+
+        .form-check {
+            margin: 0;
+        }
+
+        .form-check-input:checked {
+            background-color: #ff6b35;
+            border-color: #ff6b35;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            background: #e9ecef;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #ff6b35 0%, #ff8c42 100%);
+            border-radius: 10px;
+        }
+
+        .status-text {
+            font-size: 14px;
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: none;
+            border-radius: 8px;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .nav-tabs .nav-link {
+            color: #666;
+            border: none;
+            font-weight: 600;
+            padding: 12px 24px;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: #ff6b35;
+            border-bottom: 3px solid #ff6b35;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #ff6b35;
+            border-bottom: 3px solid #ff6b35;
+            background: transparent;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6b35;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .number-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            margin: 4px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .ticket-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 12px 0;
+            border-left: 4px solid #ff6b35;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-text {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .ticket-pb {
+            color: #ff6b35;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+
+        .copy-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: #e55a24;
+        }
+
+        .table-scroll {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .strategy-title {
+            color: #ff6b35;
+            font-weight: 600;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+
+            .form-select {
+                max-width: 100%;
+            }
+
+            .ticket-box {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .copy-btn {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-main">
+        <!-- Header -->
+        <div class="brand">🎲 Powerball Analysis Bot</div>
+        <p style="text-align: center; color: white; margin-bottom: 30px;">No CLI • No Server • Pure Browser Magic</p>
+
+        <!-- Control Panel -->
+        <div class="card">
+            <div class="card-header">
+                ⚙️ Analysis Control Panel
+            </div>
+            <div class="card-body">
+                <div class="controls">
+                    <select id="ticketsSelect" class="form-select">
+                        <option value="3">3 Tickets Per Strategy</option>
+                        <option value="5" selected>5 Tickets Per Strategy</option>
+                        <option value="10">10 Tickets Per Strategy</option>
+                    </select>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="consensusCheck">
+                        <label class="form-check-label" for="consensusCheck">
+                            Consensus Mode (1000 simulations)
+                        </label>
+                    </div>
+
+                    <button class="btn-run" onclick="runAnalysis()" id="runBtn">
+                        ▶ Run Analysis Now
+                    </button>
+                </div>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress">
+                        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                    </div>
+                    <div class="status-text">
+                        Status: <strong id="statusMsg">Generating data...</strong>
+                    </div>
+                </div>
+
+                <div class="alert alert-success" id="successAlert">
+                    ✓ <strong>Analysis Complete!</strong> Scroll down to view results.
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-container" id="resultsContainer">
+            <div class="card">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#statistics">📊 Statistics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#predictions">🎰 Predictions</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Statistics Tab -->
+                    <div id="statistics" class="tab-pane fade show active">
+                        <div class="card-body">
+                            <div id="overviewStats"></div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Top 15 Main Numbers</h6>
+                                    <div class="table-scroll">
+                                        <table class="table table-sm table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Number</th>
+                                                    <th>Count</th>
+                                                    <th>%</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="topNumbers"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">🔥 Hot Numbers (Recent)</h6>
+                                    <div id="hotNumbers"></div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">⏰ Most Overdue Numbers</h6>
+                                    <div class="table-scroll">
+                                        <table class="table table-sm table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Number</th>
+                                                    <th>Draws Gap</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="overdueNumbers"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Top Powerball Numbers</h6>
+                                    <div id="powerballNumbers"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictions Tab -->
+                    <div id="predictions" class="tab-pane fade">
+                        <div class="card-body">
+                            <div id="predictionsContainer"></div>
+                            <div id="consensusContainer" style="display: none; margin-top: 40px; padding-top: 30px; border-top: 2px solid #e9ecef;">
+                                <h5 style="color: #ff6b35; margin-bottom: 20px;">✨ Consensus Picks (1000-Run Simulation)</h5>
+                                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">Most commonly selected numbers across 1000 simulations</p>
+                                <div id="consensusPicks"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let analysisData = null;
+
+        // Powerball Analysis Engine (Pure JavaScript)
+        class PowerballAnalyzer {
+            constructor() {
+                this.draws = [];
+            }
+
+            generateData(numDraws = 2080) {
+                const draws = [];
+                let currentDate = new Date('2004-01-01');
+
+                // Biases for realism
+                const mainBias = {};
+                for (let n = 1; n <= 69; n++) {
+                    if ([7, 23, 32, 41, 16, 28, 35].includes(n)) mainBias[n] = 1.08;
+                    else if ([2, 5, 9, 14, 19, 24, 29].includes(n)) mainBias[n] = 0.92;
+                    else mainBias[n] = 1.0;
+                }
+
+                const pbBias = {};
+                for (let n = 1; n <= 26; n++) {
+                    if ([10, 20, 23].includes(n)) pbBias[n] = 1.08;
+                    else if ([1, 2, 3].includes(n)) pbBias[n] = 0.92;
+                    else pbBias[n] = 1.0;
+                }
+
+                const lastSeen = {};
+                for (let n = 1; n <= 69; n++) lastSeen[n] = -Math.random() * 200;
+                const lastSeenPB = {};
+                for (let n = 1; n <= 26; n++) lastSeenPB[n] = -Math.random() * 100;
+
+                for (let drawNum = 0; drawNum < numDraws; drawNum++) {
+                    // Main numbers
+                    const weights = [];
+                    for (let n = 1; n <= 69; n++) {
+                        const gap = drawNum - lastSeen[n];
+                        const gapBonus = 1.0 + (gap / 500.0);
+                        weights.push(mainBias[n] * gapBonus);
+                    }
+
+                    const mains = this.weightedRandom(1, 70, weights, 5);
+                    mains.forEach(m => lastSeen[m] = drawNum);
+
+                    // Powerball
+                    const pbWeights = [];
+                    for (let n = 1; n <= 26; n++) {
+                        const gap = drawNum - lastSeenPB[n];
+                        const gapBonus = 1.0 + (gap / 250.0);
+                        pbWeights.push(pbBias[n] * gapBonus);
+                    }
+                    const pb = this.weightedRandomSingle(1, 27, pbWeights);
+                    lastSeenPB[pb] = drawNum;
+
+                    draws.push({
+                        date: currentDate.toISOString().split('T')[0],
+                        mains: mains.sort((a, b) => a - b),
+                        pb: pb
+                    });
+
+                    currentDate.setDate(currentDate.getDate() + 3 + Math.floor(Math.random() * 3));
+                }
+
+                this.draws = draws;
+                return draws.length;
+            }
+
+            weightedRandom(min, max, weights, count) {
+                const result = [];
+                const available = Array.from({length: max - min}, (_, i) => i + min);
+
+                for (let i = 0; i < count; i++) {
+                    const wts = available.map(n => weights[n - min] || 1);
+                    const sum = wts.reduce((a, b) => a + b, 0);
+                    const probs = wts.map(w => w / sum);
+
+                    let rand = Math.random();
+                    let selected = available[0];
+                    for (let j = 0; j < probs.length; j++) {
+                        rand -= probs[j];
+                        if (rand <= 0) {
+                            selected = available[j];
+                            break;
+                        }
+                    }
+
+                    result.push(selected);
+                    available.splice(available.indexOf(selected), 1);
+                }
+
+                return result;
+            }
+
+            weightedRandomSingle(min, max, weights) {
+                const sum = weights.reduce((a, b) => a + b, 0);
+                const probs = weights.map(w => w / sum);
+                let rand = Math.random();
+
+                for (let j = 0; j < probs.length; j++) {
+                    rand -= probs[j];
+                    if (rand <= 0) return j + min;
+                }
+                return max - 1;
+            }
+
+            analyze() {
+                const freq = {};
+                const pbFreq = {};
+                const lastSeen = {};
+
+                for (let n = 1; n <= 69; n++) freq[n] = 0;
+                for (let n = 1; n <= 26; n++) pbFreq[n] = 0;
+
+                this.draws.forEach((draw, idx) => {
+                    draw.mains.forEach(n => {
+                        freq[n]++;
+                        lastSeen[n] = idx;
+                    });
+                    pbFreq[draw.pb]++;
+                });
+
+                const gaps = {};
+                for (let n = 1; n <= 69; n++) {
+                    gaps[n] = this.draws.length - 1 - (lastSeen[n] || 0);
+                }
+
+                const recent = this.draws.slice(-50);
+                const recentFreq = {};
+                for (let n = 1; n <= 69; n++) recentFreq[n] = 0;
+                recent.forEach(d => d.mains.forEach(n => recentFreq[n]++));
+
+                return { freq, pbFreq, gaps, recentFreq };
+            }
+
+            predict(numTickets = 5) {
+                const analysis = this.analyze();
+                const predictions = {};
+
+                const strategies = ['Frequency', 'Due Numbers', 'Balanced', 'Recent Hot', 'Mixed'];
+
+                strategies.forEach(strategy => {
+                    const tickets = [];
+
+                    for (let t = 0; t < numTickets; t++) {
+                        let weights;
+
+                        if (strategy === 'Frequency') {
+                            weights = Array.from({length: 69}, (_, i) => analysis.freq[i+1] || 0);
+                        } else if (strategy === 'Due Numbers') {
+                            weights = Array.from({length: 69}, (_, i) => analysis.gaps[i+1] || 0);
+                        } else if (strategy === 'Recent Hot') {
+                            weights = Array.from({length: 69}, (_, i) => analysis.recentFreq[i+1] || 0);
+                        } else {
+                            const w1 = Array.from({length: 69}, (_, i) => analysis.freq[i+1] || 0);
+                            const w2 = Array.from({length: 69}, (_, i) => analysis.gaps[i+1] || 0);
+                            const max1 = Math.max(...w1) || 1;
+                            const max2 = Math.max(...w2) || 1;
+                            weights = Array.from({length: 69}, (_, i) => w1[i] / max1 * 0.5 + w2[i] / max2 * 0.5);
+                        }
+
+                        const mains = this.weightedRandom(1, 70, weights, 5);
+                        const pb = Math.floor(Math.random() * 26) + 1;
+
+                        tickets.push({ mains: mains.sort((a, b) => a - b), pb });
+                    }
+
+                    predictions[strategy] = tickets;
+                });
+
+                return predictions;
+            }
+
+            consensus(numTickets = 5) {
+                const numCounts = {};
+                const pbCounts = {};
+
+                for (let n = 1; n <= 69; n++) numCounts[n] = 0;
+                for (let n = 1; n <= 26; n++) pbCounts[n] = 0;
+
+                for (let sim = 0; sim < 1000; sim++) {
+                    const preds = this.predict(1);
+                    Object.values(preds).forEach(tickets => {
+                        tickets.forEach(t => {
+                            t.mains.forEach(n => numCounts[n]++);
+                            pbCounts[t.pb]++;
+                        });
+                    });
+                }
+
+                const sorted = Object.entries(numCounts).sort((a, b) => b[1] - a[1]);
+                const consensus = [];
+
+                for (let i = 0; i < numTickets; i++) {
+                    const mains = sorted.slice(i * 5, (i + 1) * 5).map(e => parseInt(e[0])).sort((a, b) => a - b);
+                    const pb = Object.entries(pbCounts).sort((a, b) => b[1] - a[1])[0][0];
+                    consensus.push({ mains, pb: parseInt(pb) });
+                }
+
+                return consensus;
+            }
+        }
+
+        async function runAnalysis() {
+            const tickets = parseInt(document.getElementById('ticketsSelect').value);
+            const useConsensus = document.getElementById('consensusCheck').checked;
+            const runBtn = document.getElementById('runBtn');
+
+            runBtn.disabled = true;
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('successAlert').style.display = 'none';
+
+            try {
+                // Step 1: Generate data
+                updateProgress(10, 'Generating synthetic data...');
+                await sleep(100);
+
+                const analyzer = new PowerballAnalyzer();
+                analyzer.generateData(2080);
+
+                // Step 2: Analyze
+                updateProgress(40, 'Running statistical analysis...');
+                await sleep(100);
+
+                const analysis = analyzer.analyze();
+
+                // Step 3: Predict
+                updateProgress(70, 'Generating predictions...');
+                await sleep(100);
+
+                const predictions = analyzer.predict(tickets);
+
+                // Step 4: Consensus
+                let consensus = null;
+                if (useConsensus) {
+                    updateProgress(85, 'Running 1000 simulations...');
+                    await sleep(100);
+                    consensus = analyzer.consensus(tickets);
+                }
+
+                // Store results
+                analysisData = { analysis, predictions, consensus, draws: analyzer.draws };
+
+                // Display results
+                displayResults();
+
+                updateProgress(100, 'Complete!');
+                document.getElementById('successAlert').style.display = 'block';
+                document.getElementById('resultsContainer').style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('statusMsg').textContent = 'Error: ' + error.message;
+            } finally {
+                runBtn.disabled = false;
+                setTimeout(() => {
+                    document.getElementById('progressContainer').style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        function updateProgress(percent, status) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('statusMsg').textContent = status;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function displayResults() {
+            const data = analysisData;
+            const { analysis, predictions, consensus } = data;
+
+            // Overview
+            const overviewHtml = `
+                <div class="stat-box">
+                    <div class="stat-value">${data.draws.length.toLocaleString()}</div>
+                    <div class="stat-label">Total Draws Analyzed</div>
+                </div>
+            `;
+            document.getElementById('overviewStats').innerHTML = overviewHtml;
+
+            // Top numbers
+            const topNums = Object.entries(analysis.freq)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15);
+
+            let topHtml = '';
+            topNums.forEach(([num, count]) => {
+                const pct = ((count / data.draws.length) * 100).toFixed(1);
+                topHtml += `
+                    <tr>
+                        <td><strong>${String(num).padStart(2, '0')}</strong></td>
+                        <td>${count}</td>
+                        <td>${pct}%</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('topNumbers').innerHTML = topHtml;
+
+            // Hot numbers
+            const hotNums = topNums.slice(0, 10).map(([n]) => n);
+            let hotHtml = hotNums.map(n => `<span class="number-badge">${String(n).padStart(2, '0')}</span>`).join('');
+            document.getElementById('hotNumbers').innerHTML = hotHtml;
+
+            // Overdue
+            const overdue = Object.entries(analysis.gaps)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            let overdueHtml = '';
+            overdue.forEach(([num, gap]) => {
+                overdueHtml += `
+                    <tr>
+                        <td><strong>${String(num).padStart(2, '0')}</strong></td>
+                        <td>${gap}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('overdueNumbers').innerHTML = overdueHtml;
+
+            // Powerball
+            const topPB = Object.entries(analysis.pbFreq)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([n]) => n);
+
+            let pbHtml = topPB.map(n => `<span class="number-badge" style="background: #ff6b35;">${String(n).padStart(2, '0')}</span>`).join('');
+            document.getElementById('powerballNumbers').innerHTML = pbHtml;
+
+            // Predictions
+            let predHtml = '';
+            Object.entries(predictions).forEach(([strategy, tickets]) => {
+                predHtml += `<div class="strategy-title">${strategy}</div>`;
+                tickets.forEach((ticket) => {
+                    const numsStr = ticket.mains.map(n => String(n).padStart(2, '0')).join(' ');
+                    predHtml += `
+                        <div class="ticket-box">
+                            <div class="ticket-text">
+                                ${numsStr}
+                                <span class="ticket-pb">PB: ${String(ticket.pb).padStart(2, '0')}</span>
+                            </div>
+                            <button class="copy-btn" onclick="copyToClipboard('${numsStr} | PB: ${String(ticket.pb).padStart(2, '0')}')">Copy</button>
+                        </div>
+                    `;
+                });
+            });
+            document.getElementById('predictionsContainer').innerHTML = predHtml;
+
+            // Consensus
+            if (consensus) {
+                let consensusHtml = '';
+                consensus.forEach((ticket) => {
+                    const numsStr = ticket.mains.map(n => String(n).padStart(2, '0')).join(' ');
+                    consensusHtml += `
+                        <div class="ticket-box">
+                            <div class="ticket-text">
+                                ${numsStr}
+                                <span class="ticket-pb">PB: ${String(ticket.pb).padStart(2, '0')}</span>
+                            </div>
+                            <button class="copy-btn" onclick="copyToClipboard('${numsStr} | PB: ${String(ticket.pb).padStart(2, '0')}')">Copy</button>
+                        </div>
+                    `;
+                });
+                document.getElementById('consensusPicks').innerHTML = consensusHtml;
+                document.getElementById('consensusContainer').style.display = 'block';
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied: ' + text);
+            });
+        }
+    </script>
+</body>
+</html>
