@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Powerball Analysis Bot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.8) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #ff6b35;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 24px;
+            color: #ff6b35 !important;
+        }
+
+        .container-main {
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            border: none;
+            padding: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 32px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            transform: none;
+        }
+
+        .progress {
+            height: 8px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #ff6b35 0%, #ff8c42 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b35;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f5f7fa;
+        }
+
+        .number-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 3px;
+            font-size: 14px;
+        }
+
+        .ticket-display {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-numbers {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .ticket-pb {
+            color: #ff6b35;
+            font-size: 20px;
+            margin-left: 10px;
+        }
+
+        .copy-btn {
+            background: #e9ecef;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .tabs-section {
+            margin-top: 30px;
+        }
+
+        .nav-tabs {
+            border: none;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .nav-tabs .nav-link {
+            color: #666;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: #ff6b35;
+            border-bottom-color: #ff6b35;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #ff6b35;
+            border-bottom-color: #ff6b35;
+            background: transparent;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner-border {
+            color: #ff6b35;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
+            border: none;
+            color: #0c4a6e;
+            border-radius: 8px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-check {
+            margin: 0;
+        }
+
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            accent-color: #ff6b35;
+        }
+
+        .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .form-select:focus {
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .ticket-display {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">🎲 Powerball Analysis Bot</span>
+            <span class="navbar-text text-light" style="font-size: 12px;">
+                Powered by Statistical Analysis
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid container-main">
+        <!-- Control Panel -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Analysis Control Panel</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="controls">
+                            <select id="ticketsSelect" class="form-select" style="max-width: 150px;">
+                                <option value="3">3 Tickets/Strategy</option>
+                                <option value="5" selected>5 Tickets/Strategy</option>
+                                <option value="10">10 Tickets/Strategy</option>
+                            </select>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="chartsCheck" checked>
+                                <label class="form-check-label" for="chartsCheck">
+                                    Generate Charts
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="consensusCheck">
+                                <label class="form-check-label" for="consensusCheck">
+                                    Consensus Mode (slower)
+                                </label>
+                            </div>
+
+                            <button id="runBtn" class="btn btn-primary" onclick="runAnalysis()">
+                                Run Analysis
+                            </button>
+                        </div>
+
+                        <div id="progressContainer" style="display: none;">
+                            <div class="progress mb-2">
+                                <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+                            </div>
+                            <p id="statusText" class="mb-0" style="font-size: 14px;"><strong>Status:</strong> <span id="statusMsg">Starting...</span></p>
+                        </div>
+
+                        <div id="completeAlert" class="alert alert-info mt-3" style="display: none;">
+                            <strong>Analysis Complete!</strong> Scroll down to view results and predictions.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Tabs -->
+        <div id="resultsContainer" style="display: none;">
+            <div class="card tabs-section">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#statistics">Statistics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#predictions">Predictions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#charts">Charts</a>
+                    </li>
+                </ul>
+
+                <!-- Statistics Tab -->
+                <div class="tab-content">
+                    <div id="statistics" class="tab-pane fade show active">
+                        <div class="card-body">
+                            <!-- Overview Stats -->
+                            <h6 class="text-uppercase text-muted mb-3">Overview</h6>
+                            <div class="stats-grid" id="overviewStats"></div>
+
+                            <hr>
+
+                            <!-- Top Numbers -->
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Top 20 Main Numbers</h6>
+                                    <div class="table-container">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Number</th>
+                                                    <th>Count</th>
+                                                    <th>%</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="topNumbers"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Top 10 Powerball</h6>
+                                    <div class="table-container">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Powerball</th>
+                                                    <th>Count</th>
+                                                    <th>%</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="topPB"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Hot/Cold -->
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Hot Numbers (Recent)</h6>
+                                    <div id="hotNumbers"></div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Cold Numbers (Recent)</h6>
+                                    <div id="coldNumbers"></div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Overdue & Trends -->
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Most Overdue Numbers</h6>
+                                    <div class="table-container">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Number</th>
+                                                    <th>Gap</th>
+                                                    <th>Months</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="overdue"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Top Number Pairs</h6>
+                                    <div class="table-container">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Pair</th>
+                                                    <th>Times</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="pairs"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Trends -->
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Rising Numbers</h6>
+                                    <div id="trendsRising"></div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Falling Numbers</h6>
+                                    <div id="trendsFalling"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictions Tab -->
+                    <div id="predictions" class="tab-pane fade">
+                        <div class="card-body">
+                            <div id="predictionsContainer"></div>
+                            <div id="consensusContainer" style="display: none; margin-top: 30px;">
+                                <h5 style="color: #ff6b35; margin-bottom: 15px;">Consensus Picks (1,000-Run Simulation)</h5>
+                                <div id="consensusPicks"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Tab -->
+                    <div id="charts" class="tab-pane fade">
+                        <div class="card-body">
+                            <div id="chartsContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = '/api';
+
+        async function runAnalysis() {
+            const tickets = parseInt(document.getElementById('ticketsSelect').value);
+            const charts = document.getElementById('chartsCheck').checked;
+            const consensus = document.getElementById('consensusCheck').checked;
+
+            const runBtn = document.getElementById('runBtn');
+            runBtn.disabled = true;
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('completeAlert').style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/run-analysis`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tickets, charts, consensus }),
+                });
+
+                if (!response.ok) throw new Error('Failed to start analysis');
+
+                // Poll for progress
+                await pollProgress();
+
+                // Load results
+                await loadResults();
+                document.getElementById('resultsContainer').style.display = 'block';
+                document.getElementById('completeAlert').style.display = 'block';
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                runBtn.disabled = false;
+            }
+        }
+
+        async function pollProgress() {
+            return new Promise((resolve) => {
+                const interval = setInterval(async () => {
+                    const response = await fetch(`${API_BASE}/status`);
+                    const data = await response.json();
+
+                    document.getElementById('progressBar').style.width = data.progress + '%';
+                    document.getElementById('statusMsg').textContent = data.status;
+
+                    if (!data.running) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 500);
+            });
+        }
+
+        async function loadResults() {
+            try {
+                // Load statistics
+                const statsResponse = await fetch(`${API_BASE}/results`);
+                const statsData = await statsResponse.json();
+                renderStatistics(statsData);
+
+                // Load predictions
+                const predResponse = await fetch(`${API_BASE}/predictions`);
+                const predData = await predResponse.json();
+                renderPredictions(predData);
+
+                // Load charts
+                const chartResponse = await fetch(`${API_BASE}/charts`);
+                const chartData = await chartResponse.json();
+                renderCharts(chartData.charts);
+
+            } catch (error) {
+                console.error('Error loading results:', error);
+            }
+        }
+
+        function renderStatistics(data) {
+            const overview = data.overview;
+
+            // Overview stats
+            const overviewHtml = `
+                <div class="stat-card">
+                    <div class="stat-value">${overview.total_draws.toLocaleString()}</div>
+                    <div class="stat-label">Total Draws</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${overview.date_range[0]}</div>
+                    <div class="stat-label">Start Date</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${overview.date_range[1]}</div>
+                    <div class="stat-label">End Date</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${overview.consecutive_pct.toFixed(1)}%</div>
+                    <div class="stat-label">Consecutive</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${overview.sum_mean}</div>
+                    <div class="stat-label">Avg Sum</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${overview.sum_range[0]}-${overview.sum_range[1]}</div>
+                    <div class="stat-label">Sum Range</div>
+                </div>
+            `;
+            document.getElementById('overviewStats').innerHTML = overviewHtml;
+
+            // Top numbers
+            let topNumbersHtml = '';
+            data.top_numbers.forEach(n => {
+                topNumbersHtml += `
+                    <tr>
+                        <td><strong>${n.number.toString().padStart(2, '0')}</strong></td>
+                        <td>${n.count}</td>
+                        <td>${n.pct}%</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('topNumbers').innerHTML = topNumbersHtml;
+
+            // Top PB
+            let topPBHtml = '';
+            data.top_pb.forEach(n => {
+                topPBHtml += `
+                    <tr>
+                        <td><strong style="color: #ff6b35;">${n.number.toString().padStart(2, '0')}</strong></td>
+                        <td>${n.count}</td>
+                        <td>${n.pct}%</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('topPB').innerHTML = topPBHtml;
+
+            // Hot/Cold
+            let hotHtml = '';
+            data.hot_numbers.forEach(n => {
+                hotHtml += `<span class="number-badge" style="background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);">${n.num} (${n.freq})</span>`;
+            });
+            document.getElementById('hotNumbers').innerHTML = hotHtml || 'No data';
+
+            let coldHtml = '';
+            data.cold_numbers.forEach(n => {
+                coldHtml += `<span class="number-badge" style="background: #6c757d;">${n.num} (${n.freq})</span>`;
+            });
+            document.getElementById('coldNumbers').innerHTML = coldHtml || 'No data';
+
+            // Overdue
+            let overdueHtml = '';
+            data.overdue.forEach(n => {
+                overdueHtml += `
+                    <tr>
+                        <td><strong>${n.num.toString().padStart(2, '0')}</strong></td>
+                        <td>${n.gap}</td>
+                        <td>~${n.months}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('overdue').innerHTML = overdueHtml;
+
+            // Pairs
+            let pairsHtml = '';
+            data.top_pairs.forEach(p => {
+                pairsHtml += `
+                    <tr>
+                        <td>${p.pair}</td>
+                        <td><strong>${p.times}</strong></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('pairs').innerHTML = pairsHtml;
+
+            // Trends
+            let rissingHtml = '';
+            data.trends_rising.forEach(t => {
+                rissingHtml += `<span class="number-badge" style="background: #22c55e;">↑ ${t.num} (${t.trend})</span>`;
+            });
+            document.getElementById('trendsRising').innerHTML = rissingHtml;
+
+            let fallingHtml = '';
+            data.trends_falling.forEach(t => {
+                fallingHtml += `<span class="number-badge" style="background: #ef4444;">↓ ${t.num} (${t.trend})</span>`;
+            });
+            document.getElementById('trendsFalling').innerHTML = fallingHtml;
+        }
+
+        function renderPredictions(data) {
+            let html = '';
+            for (const [strategy, tickets] of Object.entries(data.predictions)) {
+                html += `<h5 style="color: #ff6b35; margin-top: 25px; margin-bottom: 15px;">${strategy}</h5>`;
+                tickets.forEach((t, i) => {
+                    html += `
+                        <div class="ticket-display">
+                            <div class="ticket-numbers">${t.ticket}</div>
+                            <button class="copy-btn" onclick="copyToClipboard('${t.ticket}')">Copy</button>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('predictionsContainer').innerHTML = html;
+
+            // Consensus
+            if (data.consensus) {
+                let consensusHtml = '';
+                data.consensus.forEach(t => {
+                    consensusHtml += `
+                        <div class="ticket-display">
+                            <div class="ticket-numbers">${t.ticket}</div>
+                            <button class="copy-btn" onclick="copyToClipboard('${t.ticket}')">Copy</button>
+                        </div>
+                    `;
+                });
+                document.getElementById('consensusPicks').innerHTML = consensusHtml;
+                document.getElementById('consensusContainer').style.display = 'block';
+            }
+        }
+
+        function renderCharts(charts) {
+            let html = '';
+            charts.forEach(chart => {
+                html += `
+                    <div class="chart-container">
+                        <h6 style="margin-bottom: 10px;">${chart.name}</h6>
+                        <img src="${chart.url}" alt="${chart.name}">
+                    </div>
+                `;
+            });
+            document.getElementById('chartsContainer').innerHTML = html || '<p>No charts available</p>';
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied: ' + text);
+            });
+        }
+    </script>
+</body>
+</html>
