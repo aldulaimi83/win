@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Powerball Analysis Bot</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            padding: 20px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.98);
+            transition: transform 0.3s;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            border: none;
+            padding: 20px;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 28px;
+            color: #ff6b35 !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 32px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #e55a24 0%, #ff7a36 100%);
+        }
+
+        .progress {
+            height: 10px;
+            border-radius: 10px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #ff6b35 0%, #ff8c42 100%);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-select, .form-check-input {
+            border-radius: 8px;
+        }
+
+        .form-check-input:checked {
+            background-color: #ff6b35;
+            border-color: #ff6b35;
+        }
+
+        .number-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 3px;
+            font-size: 14px;
+        }
+
+        .ticket-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .ticket-numbers {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .ticket-pb {
+            color: #ff6b35;
+            font-size: 18px;
+            margin-left: 15px;
+        }
+
+        .copy-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #e55a24;
+            transform: scale(1.05);
+        }
+
+        .tabs-section {
+            margin-top: 30px;
+        }
+
+        .nav-tabs {
+            border: none;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .nav-tabs .nav-link {
+            color: #666;
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: #ff6b35;
+            border-bottom: 3px solid #ff6b35;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #ff6b35;
+            border-bottom: 3px solid #ff6b35;
+            background: transparent;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b35;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner-border {
+            color: #ff6b35;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+
+            .form-select {
+                width: 100%;
+            }
+
+            .ticket-display {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ticket-pb {
+                margin-left: 0;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="text-center mb-4" style="color: white;">
+            <h1 class="navbar-brand">🎲 Powerball Analysis Bot</h1>
+            <p style="font-size: 14px; margin-top: 10px;">No CLI • No Server • Just Open & Run</p>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Analysis Control Panel</h5>
+            </div>
+            <div class="card-body">
+                <div class="controls">
+                    <select id="ticketsSelect" class="form-select" style="max-width: 180px;">
+                        <option value="3">3 Tickets/Strategy</option>
+                        <option value="5" selected>5 Tickets/Strategy</option>
+                        <option value="10">10 Tickets/Strategy</option>
+                    </select>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="consensusCheck">
+                        <label class="form-check-label" for="consensusCheck" style="margin-bottom: 0;">
+                            Consensus Mode (1000 runs)
+                        </label>
+                    </div>
+
+                    <button id="runBtn" class="btn btn-primary" onclick="runAnalysis()">
+                        ▶ Run Analysis
+                    </button>
+                </div>
+
+                <!-- Progress -->
+                <div id="progressContainer" style="display: none;">
+                    <div class="progress mb-2" style="height: 12px;">
+                        <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+                    </div>
+                    <p id="statusText" style="font-size: 14px; margin: 0;">
+                        <strong>Status:</strong> <span id="statusMsg">Initializing Python...</span>
+                    </p>
+                </div>
+
+                <div id="completeAlert" class="alert alert-success mt-3" style="display: none;">
+                    ✓ <strong>Analysis Complete!</strong> Scroll down to view results and predictions.
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsSection" class="results-section">
+            <div class="card tabs-section">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#statistics">Statistics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#predictions">Predictions</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Statistics Tab -->
+                    <div id="statistics" class="tab-pane fade show active">
+                        <div class="card-body">
+                            <h6 class="text-uppercase text-muted mb-3">Overview</h6>
+                            <div id="overviewStats"></div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Top 15 Main Numbers</h6>
+                                    <div class="table-container">
+                                        <table class="table table-sm table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Number</th>
+                                                    <th>Count</th>
+                                                    <th>%</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="topNumbers"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Hot Numbers</h6>
+                                    <div id="hotNumbers"></div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Most Overdue Numbers</h6>
+                                    <div class="table-container">
+                                        <table class="table table-sm table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Number</th>
+                                                    <th>Gap</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="overdueNumbers"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h6 class="text-uppercase text-muted mb-3">Top Powerball</h6>
+                                    <div id="powerballNumbers"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictions Tab -->
+                    <div id="predictions" class="tab-pane fade">
+                        <div class="card-body">
+                            <div id="predictionsContainer"></div>
+                            <div id="consensusContainer" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e9ecef;">
+                                <h5 style="color: #ff6b35; margin-bottom: 15px;">✨ Consensus Picks (1000-Run Simulation)</h5>
+                                <div id="consensusPicks"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let pyodide;
+        let analysisResults = null;
+
+        async function initializePython() {
+            pyodide = await loadPyodide();
+
+            // Install required packages
+            await pyodide.loadPackage(['numpy', 'pandas']);
+
+            // Load our Python modules
+            await loadPythonCode();
+        }
+
+        async function loadPythonCode() {
+            const pythonCode = `
+import random
+from collections import Counter
+from datetime import datetime, timedelta
+import json
+
+class PowerballBot:
+    def __init__(self):
+        self.draws = []
+
+    def generate_data(self, num_draws=2080):
+        """Generate realistic Powerball draws"""
+        draws = []
+        current_date = datetime.strptime("2004-01-01", "%Y-%m-%d")
+
+        # Bias towards certain numbers
+        main_bias = {}
+        for n in range(1, 70):
+            if n in [7, 23, 32, 41, 16, 28, 35]:
+                main_bias[n] = 1.05
+            elif n in [2, 5, 9, 14, 19, 24, 29]:
+                main_bias[n] = 0.95
+            else:
+                main_bias[n] = 1.0
+
+        pb_bias = {}
+        for n in range(1, 27):
+            if n in [10, 20, 23]:
+                pb_bias[n] = 1.08
+            elif n in [1, 2, 3]:
+                pb_bias[n] = 0.92
+            else:
+                pb_bias[n] = 1.0
+
+        last_mains = {n: -(random.randint(1, 200)) for n in range(1, 70)}
+        last_pb = {n: -(random.randint(1, 100)) for n in range(1, 27)}
+
+        for draw_num in range(num_draws):
+            weights = []
+            for n in range(1, 70):
+                base_weight = main_bias[n]
+                gap = draw_num - last_mains[n]
+                gap_bonus = 1.0 + (gap / 500.0)
+                weight = base_weight * gap_bonus
+                weights.append(weight)
+
+            total_weight = sum(weights)
+            probs = [w / total_weight for w in weights]
+            mains = sorted(random.choices(range(1, 70), weights=probs, k=5))
+
+            for m in mains:
+                last_mains[m] = draw_num
+
+            pb_weights = []
+            for n in range(1, 27):
+                base_weight = pb_bias[n]
+                gap = draw_num - last_pb[n]
+                gap_bonus = 1.0 + (gap / 250.0)
+                weight = base_weight * gap_bonus
+                pb_weights.append(weight)
+
+            total_pb_weight = sum(pb_weights)
+            pb_probs = [w / total_pb_weight for w in pb_weights]
+            pb = int(random.choices(range(1, 27), weights=pb_probs, k=1)[0])
+            last_pb[pb] = draw_num
+
+            draws.append({
+                "date": current_date.strftime("%Y-%m-%d"),
+                "n1": mains[0],
+                "n2": mains[1],
+                "n3": mains[2],
+                "n4": mains[3],
+                "n5": mains[4],
+                "powerball": pb,
+            })
+
+            current_date += timedelta(days=3 + random.randint(0, 2))
+
+        self.draws = draws
+        return len(draws)
+
+    def analyze(self):
+        """Run analysis on draws"""
+        # Frequency
+        all_nums = []
+        for d in self.draws:
+            for i in range(1, 6):
+                all_nums.append(d[f'n{i}'])
+
+        freq = Counter(all_nums)
+
+        # Powerball frequency
+        pb_freq = Counter([d['powerball'] for d in self.draws])
+
+        # Gaps
+        last_seen = {}
+        for idx, draw in enumerate(self.draws):
+            for i in range(1, 6):
+                last_seen[draw[f'n{i}']] = idx
+
+        gaps = {}
+        for n in range(1, 70):
+            if n in last_seen:
+                gaps[n] = (len(self.draws) - 1) - last_seen[n]
+            else:
+                gaps[n] = len(self.draws)
+
+        # Hot/cold (last 50 draws)
+        recent = self.draws[-50:]
+        recent_nums = []
+        for d in recent:
+            for i in range(1, 6):
+                recent_nums.append(d[f'n{i}'])
+
+        recent_freq = Counter(recent_nums)
+
+        return {
+            'total_draws': len(self.draws),
+            'frequency': dict(sorted(freq.items(), key=lambda x: x[1], reverse=True)[:20]),
+            'powerball_frequency': dict(sorted(pb_freq.items(), key=lambda x: x[1], reverse=True)[:10]),
+            'gaps': gaps,
+            'recent_freq': recent_freq,
+        }
+
+    def predict(self, n_tickets=5):
+        """Generate predictions"""
+        analysis = self.analyze()
+        freq = analysis['frequency']
+        recent_freq = analysis['recent_freq']
+        gaps = analysis['gaps']
+
+        predictions = {}
+        strategies = ['Frequency', 'Due Numbers', 'Balanced', 'Sum-Based', 'Recent Hot']
+
+        for strategy in strategies:
+            tickets = []
+            for _ in range(n_tickets):
+                if strategy == 'Frequency':
+                    weights = [freq.get(n, 0) for n in range(1, 70)]
+                elif strategy == 'Due Numbers':
+                    weights = [gaps.get(n, 0) for n in range(1, 70)]
+                elif strategy == 'Recent Hot':
+                    weights = [recent_freq.get(n, 0) for n in range(1, 70)]
+                else:  # Balanced
+                    w1 = [freq.get(n, 0) for n in range(1, 70)]
+                    w2 = [gaps.get(n, 0) for n in range(1, 70)]
+                    max_w1, max_w2 = max(w1) or 1, max(w2) or 1
+                    weights = [w1[i]/max_w1 * 0.5 + w2[i]/max_w2 * 0.5 for i in range(69)]
+
+                total = sum(weights)
+                if total == 0:
+                    weights = [1/69] * 69
+                else:
+                    weights = [w/total for w in weights]
+
+                mains = sorted(random.choices(range(1, 70), weights=weights, k=5))
+                pb = random.randint(1, 26)
+                tickets.append((mains, pb))
+
+            predictions[strategy] = tickets
+
+        return predictions
+
+# Initialize bot
+bot = PowerballBot()
+`;
+
+            pyodide.runPython(pythonCode);
+        }
+
+        async function runAnalysis() {
+            const tickets = parseInt(document.getElementById('ticketsSelect').value);
+            const consensus = document.getElementById('consensusCheck').checked;
+
+            const runBtn = document.getElementById('runBtn');
+            runBtn.disabled = true;
+            document.getElementById('progressContainer').style.display = 'block';
+
+            try {
+                updateStatus('Generating synthetic data...', 20);
+
+                await pyodide.runPythonAsync(`
+bot.generate_data(2080)
+result_data = "Generated"
+`);
+
+                updateStatus('Running statistical analysis...', 50);
+
+                await pyodide.runPythonAsync(`
+analysis = bot.analyze()
+`);
+
+                updateStatus('Generating predictions...', 75);
+
+                await pyodide.runPythonAsync(`
+predictions = bot.predict(${tickets})
+`);
+
+                if (consensus) {
+                    updateStatus('Running consensus simulation...', 85);
+
+                    await pyodide.runPythonAsync(`
+consensus_tickets = []
+for _ in range(1000):
+    preds = bot.predict(1)
+    for strategy in preds:
+        for mains, pb in preds[strategy]:
+            consensus_tickets.append((mains, pb))
+
+from collections import Counter
+num_counts = Counter()
+pb_counts = Counter()
+for mains, pb in consensus_tickets:
+    for n in mains:
+        num_counts[n] += 1
+    pb_counts[pb] += 1
+
+top_nums = sorted(num_counts.items(), key=lambda x: x[1], reverse=True)[:25]
+consensus_picks = []
+for i in range(${tickets}):
+    mains = sorted([n for n, _ in top_nums[i*5:(i+1)*5]])
+    pb = max(pb_counts.items(), key=lambda x: x[1])[0]
+    consensus_picks.append((mains, pb))
+`);
+                }
+
+                updateStatus('Rendering results...', 95);
+
+                const analysis = await pyodide.globals.get('analysis');
+                const predictions = await pyodide.globals.get('predictions');
+
+                analysisResults = {
+                    analysis: analysis.toJs(),
+                    predictions: predictions.toJs(),
+                    consensus: consensus ? await pyodide.globals.get('consensus_picks').toJs() : null
+                };
+
+                displayResults();
+                document.getElementById('resultsSection').style.display = 'block';
+                document.getElementById('completeAlert').style.display = 'block';
+                updateStatus('Complete!', 100);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('statusMsg').textContent = 'Error: ' + error.message;
+            } finally {
+                runBtn.disabled = false;
+                setTimeout(() => {
+                    document.getElementById('progressContainer').style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        function updateStatus(msg, progress) {
+            document.getElementById('statusMsg').textContent = msg;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function displayResults() {
+            if (!analysisResults) return;
+
+            const analysis = analysisResults.analysis;
+
+            // Overview stats
+            const overviewHtml = `
+                <div class="stat-card">
+                    <div class="stat-value">${analysis.total_draws}</div>
+                    <div class="stat-label">Total Draws</div>
+                </div>
+            `;
+            document.getElementById('overviewStats').innerHTML = overviewHtml;
+
+            // Top numbers
+            const freqObj = analysis.frequency;
+            let topHtml = '';
+            Object.entries(freqObj).slice(0, 15).forEach(([num, count]) => {
+                const pct = ((count / analysis.total_draws) * 100).toFixed(1);
+                topHtml += `
+                    <tr>
+                        <td><strong>${num.padStart(2, '0')}</strong></td>
+                        <td>${count}</td>
+                        <td>${pct}%</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('topNumbers').innerHTML = topHtml;
+
+            // Hot numbers
+            let hotHtml = '';
+            for (let n = 1; n <= 15; n++) {
+                if (Object.keys(analysis.frequency).includes(String(n))) {
+                    hotHtml += `<span class="number-badge">${n}</span>`;
+                }
+            }
+            document.getElementById('hotNumbers').innerHTML = hotHtml || 'Analyzing...';
+
+            // Overdue
+            const gaps = analysis.gaps;
+            let overdueHtml = '';
+            Object.entries(gaps)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .forEach(([num, gap]) => {
+                    overdueHtml += `
+                        <tr>
+                            <td><strong>${num.padStart(2, '0')}</strong></td>
+                            <td>${gap}</td>
+                        </tr>
+                    `;
+                });
+            document.getElementById('overdueNumbers').innerHTML = overdueHtml;
+
+            // Powerball
+            const pbObj = analysis.powerball_frequency;
+            let pbHtml = '';
+            Object.entries(pbObj).slice(0, 5).forEach(([num, count]) => {
+                pbHtml += `<span class="number-badge" style="background: #ff6b35;">${num}</span>`;
+            });
+            document.getElementById('powerballNumbers').innerHTML = pbHtml;
+
+            // Predictions
+            let predHtml = '';
+            const predictions = analysisResults.predictions;
+            for (const [strategy, tickets] of Object.entries(predictions)) {
+                predHtml += `<h5 style="color: #ff6b35; margin-top: 25px;">${strategy}</h5>`;
+                tickets.forEach((ticket, i) => {
+                    const [mains, pb] = ticket;
+                    const numsStr = mains.map(n => String(n).padStart(2, '0')).join(' ');
+                    predHtml += `
+                        <div class="ticket-display">
+                            <div class="ticket-numbers">${numsStr} | <span class="ticket-pb">PB: ${String(pb).padStart(2, '0')}</span></div>
+                            <button class="copy-btn" onclick="copyTicket('${numsStr} | ${pb}')">Copy</button>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('predictionsContainer').innerHTML = predHtml;
+
+            // Consensus
+            if (analysisResults.consensus) {
+                let consensusHtml = '';
+                analysisResults.consensus.forEach(ticket => {
+                    const [mains, pb] = ticket;
+                    const numsStr = mains.map(n => String(n).padStart(2, '0')).join(' ');
+                    consensusHtml += `
+                        <div class="ticket-display">
+                            <div class="ticket-numbers">${numsStr} | <span class="ticket-pb">PB: ${String(pb).padStart(2, '0')}</span></div>
+                            <button class="copy-btn" onclick="copyTicket('${numsStr} | ${pb}')">Copy</button>
+                        </div>
+                    `;
+                });
+                document.getElementById('consensusPicks').innerHTML = consensusHtml;
+                document.getElementById('consensusContainer').style.display = 'block';
+            }
+        }
+
+        function copyTicket(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied: ' + text);
+            });
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initializePython().then(() => {
+                console.log('Python environment ready!');
+            });
+        });
+    </script>
+</body>
+</html>
