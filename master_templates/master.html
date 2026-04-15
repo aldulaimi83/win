@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Powerball Bot - Master Control Panel</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.9) !important;
+            border-bottom: 3px solid #ff6b35;
+            padding: 20px 0;
+        }
+
+        .navbar-brand {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6b35 !important;
+        }
+
+        .container-main {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .bot-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .bot-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .bot-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            border-color: #ff6b35;
+        }
+
+        .bot-card.active {
+            border-color: #ff6b35;
+            background: #fffaf0;
+        }
+
+        .bot-header {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .bot-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .bot-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .bot-body {
+            padding: 25px;
+        }
+
+        .bot-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .bot-features {
+            list-style: none;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .bot-features li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .bot-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #ff6b35;
+            font-weight: bold;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .control-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-select, .form-control {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 10px 15px;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            accent-color: #ff6b35;
+            cursor: pointer;
+        }
+
+        .form-check-label {
+            cursor: pointer;
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        .btn-run {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-run:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-run:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            background: #e9ecef;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #ff6b35 0%, #ff8c42 100%);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 12px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .results-container {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .nav-tabs {
+            border-bottom: 3px solid #e9ecef;
+            background: #f8f9fa;
+        }
+
+        .nav-tabs .nav-link {
+            color: #666;
+            border: none;
+            font-weight: 600;
+            padding: 15px 25px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: #ff6b35;
+            border-bottom-color: #ff6b35;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: white;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            border-bottom: 3px solid #ff6b35;
+        }
+
+        .tab-content {
+            padding: 30px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 15px 0;
+            min-width: 150px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6b35;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .number-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            margin: 4px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .ticket-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 12px 0;
+            border-left: 4px solid #ff6b35;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-text {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .ticket-pb {
+            color: #ff6b35;
+            margin-left: 10px;
+        }
+
+        .copy-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: #e55a24;
+        }
+
+        .strategy-header {
+            color: #ff6b35;
+            font-weight: 600;
+            margin-top: 25px;
+            font-size: 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6b35;
+        }
+
+        .table-scroll {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        @media (max-width: 768px) {
+            .bot-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .form-select {
+                width: 100%;
+            }
+
+            .ticket-box {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .copy-btn {
+                margin-top: 10px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">🎲 Powerball Analysis Bot</span>
+            <span class="navbar-text text-light" style="font-size: 12px;">Master Control Panel</span>
+        </div>
+    </nav>
+
+    <div class="container-main">
+        <!-- Bot Selection -->
+        <div class="section-title">Select Analysis Mode</div>
+
+        <div class="bot-selector">
+            <!-- Quick Mode -->
+            <div class="bot-card" data-mode="quick" onclick="selectMode('quick')">
+                <div class="bot-header">
+                    <div class="bot-icon">⚡</div>
+                    <div class="bot-title">Quick Analysis</div>
+                </div>
+                <div class="bot-body">
+                    <p class="bot-description">Fast analysis with basic predictions</p>
+                    <ul class="bot-features">
+                        <li>5 predictions strategies</li>
+                        <li>Fast (5-10 seconds)</li>
+                        <li>No consensus needed</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Full Mode -->
+            <div class="bot-card active" data-mode="full" onclick="selectMode('full')">
+                <div class="bot-header">
+                    <div class="bot-icon">📊</div>
+                    <div class="bot-title">Full Analysis</div>
+                </div>
+                <div class="bot-body">
+                    <p class="bot-description">Complete statistical analysis with all data</p>
+                    <ul class="bot-features">
+                        <li>9 statistical analyses</li>
+                        <li>5 prediction strategies</li>
+                        <li>Charts & visualizations</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Consensus Mode -->
+            <div class="bot-card" data-mode="consensus" onclick="selectMode('consensus')">
+                <div class="bot-header">
+                    <div class="bot-icon">✨</div>
+                    <div class="bot-title">Consensus Picks</div>
+                </div>
+                <div class="bot-body">
+                    <p class="bot-description">1000-simulation consensus for best picks</p>
+                    <ul class="bot-features">
+                        <li>1000 simulations</li>
+                        <li>Most reliable picks</li>
+                        <li>Slower (1-2 min)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="control-title">⚙️ Control Panel</div>
+
+            <div class="controls">
+                <select id="ticketsSelect" class="form-select" style="max-width: 200px;">
+                    <option value="3">3 Tickets/Strategy</option>
+                    <option value="5" selected>5 Tickets/Strategy</option>
+                    <option value="10">10 Tickets/Strategy</option>
+                </select>
+
+                <button class="btn-run" onclick="runAnalysis()" id="runBtn">
+                    ▶ START ANALYSIS
+                </button>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                </div>
+                <div class="status-text">
+                    Status: <strong id="statusMsg">Initializing...</strong>
+                </div>
+            </div>
+
+            <!-- Success Alert -->
+            <div class="alert-success" id="successAlert">
+                ✓ <strong>Analysis Complete!</strong> Scroll down to view detailed results.
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-container" id="resultsContainer">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#statistics">📊 Statistics</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#predictions">🎰 Predictions</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Statistics Tab -->
+                <div id="statistics" class="tab-pane fade show active">
+                    <h4 style="color: #ff6b35; margin-bottom: 20px;">Overview</h4>
+                    <div id="overviewStats" style="display: flex; flex-wrap: wrap; gap: 15px;"></div>
+
+                    <hr style="margin: 30px 0;">
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="text-uppercase text-muted mb-3">🏆 Top 20 Numbers</h6>
+                            <div class="table-scroll">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Number</th>
+                                            <th>Count</th>
+                                            <th>%</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topNumbers"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h6 class="text-uppercase text-muted mb-3">🔥 Hot Numbers</h6>
+                            <div id="hotNumbers"></div>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 30px 0;">
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="text-uppercase text-muted mb-3">⏰ Overdue Numbers</h6>
+                            <div class="table-scroll">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Number</th>
+                                            <th>Gap</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="overdueNumbers"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h6 class="text-uppercase text-muted mb-3">🎯 Top Powerball</h6>
+                            <div id="powerballNumbers"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Predictions Tab -->
+                <div id="predictions" class="tab-pane fade">
+                    <div id="predictionsContainer"></div>
+                    <button class="download-btn" onclick="downloadResults()">⬇ Download as CSV</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedMode = 'full';
+
+        function selectMode(mode) {
+            selectedMode = mode;
+
+            // Update UI
+            document.querySelectorAll('.bot-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+        }
+
+        async function runAnalysis() {
+            const tickets = parseInt(document.getElementById('ticketsSelect').value);
+            const runBtn = document.getElementById('runBtn');
+
+            runBtn.disabled = true;
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('successAlert').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/run-analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: selectedMode, tickets }),
+                });
+
+                if (!response.ok) throw new Error('Failed to start analysis');
+
+                // Poll for progress
+                await pollProgress();
+
+                // Load results
+                await loadResults();
+                document.getElementById('resultsContainer').style.display = 'block';
+                document.getElementById('successAlert').style.display = 'block';
+
+                // Scroll to results
+                setTimeout(() => {
+                    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                runBtn.disabled = false;
+                document.getElementById('progressContainer').style.display = 'none';
+            }
+        }
+
+        async function pollProgress() {
+            return new Promise((resolve) => {
+                const interval = setInterval(async () => {
+                    const response = await fetch('/api/status');
+                    const data = await response.json();
+
+                    document.getElementById('progressBar').style.width = data.progress + '%';
+                    document.getElementById('statusMsg').textContent = data.status;
+
+                    if (!data.running) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 500);
+            });
+        }
+
+        async function loadResults() {
+            const response = await fetch('/api/results');
+            const results = await response.json();
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            // Overview
+            const overviewHtml = `
+                <div class="stat-box">
+                    <div class="stat-value">${results.overview.total_draws.toLocaleString()}</div>
+                    <div class="stat-label">Total Draws</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${results.overview.sum_mean}</div>
+                    <div class="stat-label">Avg Sum</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${results.overview.consecutive_pct}%</div>
+                    <div class="stat-label">Consecutive</div>
+                </div>
+            `;
+            document.getElementById('overviewStats').innerHTML = overviewHtml;
+
+            // Top numbers
+            let topHtml = '';
+            results.top_numbers.forEach(n => {
+                topHtml += `
+                    <tr>
+                        <td><strong>${String(n.num).padStart(2, '0')}</strong></td>
+                        <td>${n.count}</td>
+                        <td>${n.pct}%</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('topNumbers').innerHTML = topHtml;
+
+            // Hot numbers
+            let hotHtml = '';
+            results.hot.forEach(n => {
+                hotHtml += `<span class="number-badge">${String(n.num).padStart(2, '0')} (${n.freq})</span>`;
+            });
+            document.getElementById('hotNumbers').innerHTML = hotHtml;
+
+            // Overdue
+            let overdueHtml = '';
+            results.overdue.forEach(n => {
+                overdueHtml += `
+                    <tr>
+                        <td><strong>${String(n.num).padStart(2, '0')}</strong></td>
+                        <td>${n.gap}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('overdueNumbers').innerHTML = overdueHtml;
+
+            // Powerball
+            let pbHtml = '';
+            results.top_pb.forEach(n => {
+                pbHtml += `<span class="number-badge" style="background: #ff6b35;">${String(n.num).padStart(2, '0')}</span>`;
+            });
+            document.getElementById('powerballNumbers').innerHTML = pbHtml;
+
+            // Predictions
+            let predHtml = '';
+            Object.entries(results.predictions).forEach(([strategy, tickets]) => {
+                predHtml += `<div class="strategy-header">${strategy}</div>`;
+                tickets.forEach((ticket, i) => {
+                    const numsStr = ticket.nums.map(n => String(n).padStart(2, '0')).join(' ');
+                    predHtml += `
+                        <div class="ticket-box">
+                            <div class="ticket-text">
+                                ${numsStr}
+                                <span class="ticket-pb">PB: ${String(ticket.pb).padStart(2, '0')}</span>
+                            </div>
+                            <button class="copy-btn" onclick="copyToClipboard('${numsStr} | PB: ${String(ticket.pb).padStart(2, '0')}')">Copy</button>
+                        </div>
+                    `;
+                });
+            });
+
+            if (results.consensus && results.consensus.length > 0) {
+                predHtml += `<div class="strategy-header" style="margin-top: 40px;">✨ Consensus Picks (1000 Simulations)</div>`;
+                results.consensus.forEach((ticket, i) => {
+                    const numsStr = ticket.nums.map(n => String(n).padStart(2, '0')).join(' ');
+                    predHtml += `
+                        <div class="ticket-box">
+                            <div class="ticket-text">
+                                ${numsStr}
+                                <span class="ticket-pb">PB: ${String(ticket.pb).padStart(2, '0')}</span>
+                            </div>
+                            <button class="copy-btn" onclick="copyToClipboard('${numsStr} | PB: ${String(ticket.pb).padStart(2, '0')}')">Copy</button>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('predictionsContainer').innerHTML = predHtml;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied: ' + text);
+            });
+        }
+
+        function downloadResults() {
+            alert('Download feature coming soon! Copy predictions from screen for now.');
+        }
+    </script>
+</body>
+</html>
